@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+        <meta charset="utf-8">
+        <!--<meta name="keywords" content="" />-->
+		<!--<meta name="description" content="zq" />-->
+        <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+        <!--<meta name="author" content="zhangqiong">-->
+        <!--<meta http-equiv="pragma" content="no-cache">-->
+        <!--<meta http-equiv="cache-control" content="no-cache">-->
+        <!--<meta http-equiv="expires" content="0">-->
+
+        <title>课程表查询</title>
+       <!--css-->
+        <link rel="stylesheet" href="/static/assets/reset.css">
+        <link rel="stylesheet" href="/static/assets/supersized.css">
+        <link rel="stylesheet" href="/static/assets/style.css">
+
+        <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+        <!--[if lt IE 9]>
+            <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+<body>
+ <div class="page-container">
+            <h1>NWAFU 课程表查询</h1>
+<form action="/jwlogin/" name= "myForm" method = "post" enctype="multipart/form-data" onsubmit="return validateForm();">
+                <!--<input type='hidden' name='csrfmiddlewaretoken' value='i1knDSIdeQp0A03mdutmCHgnGDx0EGYN' />-->
+   <!--{% csrf_token %}-->
+    <input type="text" name="username" class="username" placeholder="学号", required="" value="2014012528">
+    <input type="password" name="password" class="password" placeholder="密码" required="" value="3976966">
+    <input type="text" name="captcha" class="captcha" placeholder="验证码" required="">
+    <img name="captcha" src= "data:image/jpeg;base64,{{ captcha }}" />
+    <!--<input name="ck" value="{{ cookie }}">-->
+    <button type="submit">提交</button>
+
+</form>
+<div class="connect">
+                <p name = "error" id = "error"></p>
+</div>
+            <br>
+ </div>
+
+
+        <!--js-->
+        <script src="/static/assets/js/jquery-1.8.2.min.js"></script>
+        <script src="/static/assets/js/supersized.3.2.7.min.js"></script>
+        <script src="/static/assets/js/supersized-init.js"></script>
+        <script src="/static/assets/js/scripts.js"></script>
+        <script src="/static/assets/js/checknum.js"></script>
+
+        <div class="row">
+			<div class="col-sm-12 text-center">
+				<p>©西北农林科技大学 计算机141 张琼 2017</p>
+			</div>
+		</div>
+
+</body>
+</html>
