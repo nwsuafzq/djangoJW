@@ -6,10 +6,10 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect
 import urllib
 import urllib2
-
 import re
-import string
-import types
+# import re
+# import string
+# import types
 import requests
 import sys
 import base64
@@ -27,29 +27,54 @@ def index(request):
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
     CaptchaUrl = "http://jwgl.nwsuaf.edu.cn/academic/getCaptcha.do"  # 验证码图片URL
     picture = opener.open(CaptchaUrl).read()
-
-
+    captcha = base64.b64encode(picture)
 
     # session = requests.session()
     # image = session.get(CAPTCHA_URL)
     # request.session['JSESSIONID'] = session.cookies['JSESSIONID']
     # print (type(image.content))
-    captcha = base64.b64encode(picture)
 
-    print cookie
-    return render(request, 'index.html',{'captcha': captcha,'cookie':cookie})
+
+    # print cookie
+    return render(request, 'index.html',{'captcha': captcha})
+def indexScore(request):
+    global opener
+    cookie = cookielib.CookieJar()  # 储存获取到的cookie
+    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
+    CaptchaUrl = "http://jwgl.nwsuaf.edu.cn/academic/getCaptcha.do"  # 验证码图片URL
+    picture = opener.open(CaptchaUrl).read()
+    captcha = base64.b64encode(picture)
+    return render(request, 'score.html',{'captcha': captcha})
 
 def jwlogin(request):
-    query=request.POST.get('username','')
-    query2=request.POST.get('password','')
-    query3=request.POST.get('captcha','')
-    print (query)
-    print (query2)
-    print (query3)
+    getuname=request.POST.get('username','')
+    getpwd=request.POST.get('password','')
+    getcapt=request.POST.get('captcha','')
 
-    res=NWAFU(query,query2,query3).getpage()
+    res=NWAFU(getuname,getpwd,getcapt).getpage('course')
     # print (res)
-    return render(request,'test1.html',locals())
+
+    if re.search(u'用户登录',res,re.S):
+        errormsg='登录失败，请正确填写信息'
+        return render(request,'error.html',locals())
+
+    return HttpResponse(res)
+    # return render(request,'test1.html',locals())
+def jwlogin2(request):
+    getuname=request.POST.get('username','')
+    getpwd=request.POST.get('password','')
+    getcapt=request.POST.get('captcha','')
+
+    res=NWAFU(getuname,getpwd,getcapt).getpage('score')
+    # print (res)
+
+    if re.search(u'用户登录',res,re.S):
+        errormsg='登录失败，请正确填写信息'
+        return render(request,'error.html',locals())
+    elif not re.search(u'<tbody>',res,re.S):
+        errormsg='此系统考试完后才开放，请考试完后出成绩再查询。'
+        return render(request,'error.html',locals())
+    return HttpResponse(res)
 
 # class NPU:
 #     def __init__(self, name, passwd):
@@ -151,12 +176,7 @@ def jwlogin(request):
 #             return "ssss"
 class NWAFU:
     def __init__(self, uname, upwd,capt):
-    # def login1(uname,upwd,capt):
 
-        # self.cookie = cookielib.CookieJar()  # 储存获取到的cookie
-        # print self.cookie
-        print 1111111
-        # self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookie))
         self.loging_data = urllib.urlencode([
             ('j_username', uname),
             ('j_password', upwd),
@@ -168,7 +188,7 @@ class NWAFU:
                           '(KHTML, like Gecko) Chrome/46.0.2490.71 Safari/537.36'
         }
 
-    def getpage(self):
+    def getpage(self,state):
         # 构造request
         req = urllib2.Request(url='http://jwgl.nwsuaf.edu.cn/academic/j_acegi_security_check',
                               data=self.loging_data.encode(encoding='utf-8'),
@@ -180,13 +200,18 @@ class NWAFU:
 
         except urllib2.HTTPError:
             print("connect failed")
+
         try:
-            result = opener.open(
-                'http://jwgl.nwsuaf.edu.cn/academic/student/currcourse/currcourse.jsdo?groupId=&moduleId=2000')  # 进入教务系统个人成绩信息界面
-            page = result.read().decode('gbk')
-
-            return page
-
+            if state == 'course':
+                result = opener.open(
+                    'http://jwgl.nwsuaf.edu.cn/academic/student/currcourse/currcourse.jsdo?groupId=&moduleId=2000')  # 进入教务系统个人成绩信息界面
+                page = result.read().decode('gbk')
+                return page
+            if state == 'score':
+                result = opener.open(
+                    'http://jwgl.nwsuaf.edu.cn/academic/manager/score/studentOwnScore.do?groupId=&moduleId=2021')
+                page = result.read()
+                return page
         except urllib2.HTTPError:
             print("error")
 

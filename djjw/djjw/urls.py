@@ -22,4 +22,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', dj1_views.index),
     url(r'^jwlogin/', dj1_views.jwlogin),
+    url(r'^jwlogin2/', dj1_views.jwlogin2),
+    url(r'^score/', dj1_views.indexScore),
 ]+ static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
