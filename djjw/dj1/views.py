@@ -34,7 +34,6 @@ def index(request):
     # request.session['JSESSIONID'] = session.cookies['JSESSIONID']
     # print (type(image.content))
 
-
     # print cookie
     return render(request, 'index.html', {'captcha': captcha})
 
@@ -65,7 +64,7 @@ def jwlogin(request):
     # return render(request,'test1.html',locals())
 
 
-def jwlogin2(request):
+def jwlogin_score(request):
     getuname = request.POST.get('username', '')
     getpwd = request.POST.get('password', '')
     getcapt = request.POST.get('captcha', '')
