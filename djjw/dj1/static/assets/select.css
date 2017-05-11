@@ -1,0 +1,16 @@
+.styled-select {
+    width: 240px;
+    height: 34px;
+    overflow: hidden;
+    background: url("http://images.cnblogs.com/cnblogs_com/shishm/201203/20120302110411201.jpg") no-repeat right #ddd;
+}
+
+.styled-select select {
+    background: transparent;
+    width: 268px;
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    height: 34px;
+    -webkit-appearance: none;
+}

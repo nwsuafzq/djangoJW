@@ -1,23 +1,23 @@
-#coding:utf-8
+# coding:utf-8
 import cookielib
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
+# from django.shortcuts import render_to_response
+# from django.http import HttpResponseRedirect
 import urllib
 import urllib2
 import re
-# import re
-# import string
-# import types
+
 import requests
 import sys
 import base64
+
 # from django.views.decorators.csrf import requires_csrf_token
 
 # Create your views here.
 reload(sys)
 sys.setdefaultencoding("utf-8")
+
 
 # @requires_csrf_token
 def index(request):
@@ -36,7 +36,9 @@ def index(request):
 
 
     # print cookie
-    return render(request, 'index.html',{'captcha': captcha})
+    return render(request, 'index.html', {'captcha': captcha})
+
+
 def indexScore(request):
     global opener
     cookie = cookielib.CookieJar()  # 储存获取到的cookie
@@ -44,37 +46,58 @@ def indexScore(request):
     CaptchaUrl = "http://jwgl.nwsuaf.edu.cn/academic/getCaptcha.do"  # 验证码图片URL
     picture = opener.open(CaptchaUrl).read()
     captcha = base64.b64encode(picture)
-    return render(request, 'score.html',{'captcha': captcha})
+    return render(request, 'score.html', {'captcha': captcha})
+
 
 def jwlogin(request):
-    getuname=request.POST.get('username','')
-    getpwd=request.POST.get('password','')
-    getcapt=request.POST.get('captcha','')
-
-    res=NWAFU(getuname,getpwd,getcapt).getpage('course')
+    getuname = request.POST.get('username', '')
+    getpwd = request.POST.get('password', '')
+    getcapt = request.POST.get('captcha', '')
+    print "这里："+getuname+"  "+getpwd
+    res = NWAFU(getuname, getpwd, getcapt,"","").getpage('course') #查询课程表不需要年份和学期这两个参数
     # print (res)
 
-    if re.search(u'用户登录',res,re.S):
-        errormsg='登录失败，请正确填写信息'
-        return render(request,'error.html',locals())
+    if re.search(u'用户登录', res, re.S):
+        errormsg = '登录失败，请正确填写信息'
+        return render(request, 'error.html', locals())
 
     return HttpResponse(res)
     # return render(request,'test1.html',locals())
-def jwlogin2(request):
-    getuname=request.POST.get('username','')
-    getpwd=request.POST.get('password','')
-    getcapt=request.POST.get('captcha','')
 
-    res=NWAFU(getuname,getpwd,getcapt).getpage('score')
+
+def jwlogin2(request):
+    getuname = request.POST.get('username', '')
+    getpwd = request.POST.get('password', '')
+    getcapt = request.POST.get('captcha', '')
+    year=request.POST.get('year','')
+    term=request.POST.get('term','')
+    print "这里："+getuname+"  "+getpwd
+ 
+    res = NWAFU(getuname, getpwd, getcapt,year,term).getpage('score')
     # print (res)
 
-    if re.search(u'用户登录',res,re.S):
-        errormsg='登录失败，请正确填写信息'
-        return render(request,'error.html',locals())
-    elif not re.search(u'<tbody>',res,re.S):
-        errormsg='此系统考试完后才开放，请考试完后出成绩再查询。'
-        return render(request,'error.html',locals())
+    if re.search(u'用户登录', res, re.S):
+        errormsg = '登录失败，请正确填写信息'
+        return render(request, 'error.html', locals())
     return HttpResponse(res)
+
+
+# def jwlogin3(request):
+#     getuname = request.POST.get('username', '')
+#     getpwd = request.POST.get('password', '')
+#     getcapt = request.POST.get('captcha', '')
+#     year=request.POST.get('year', '')
+#     term = request.POST.get('term', '')
+#
+#     res = NWAFU(getuname, getpwd, getcapt).getpage('score')
+#     # print (res)
+#
+#     if re.search(u'用户登录', res, re.S):
+#         errormsg = '登录失败，请正确填写信息'
+#         return render(request, 'error.html', locals())
+#     # elif not re.search(u'<tbody>', res, re.S):
+#     #     errormsg = '此系统考试完后才开放，请考试完后出成绩再查询。'
+#     return HttpResponse(res)
 
 # class NPU:
 #     def __init__(self, name, passwd):
@@ -175,7 +198,10 @@ def jwlogin2(request):
 #             print str(e)
 #             return "ssss"
 class NWAFU:
-    def __init__(self, uname, upwd,capt):
+    course_url = 'http://jwgl.nwsuaf.edu.cn/academic/student/currcourse/currcourse.jsdo?groupId=&moduleId=2000'
+    score_url_temp  = 'http://jwgl.nwsuaf.edu.cn/academic/manager/score/studentOwnScore.do?groupId=&moduleId=2021&'
+
+    def __init__(self, uname, upwd, capt , year , term):
 
         self.loging_data = urllib.urlencode([
             ('j_username', uname),
@@ -187,8 +213,10 @@ class NWAFU:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 ' +
                           '(KHTML, like Gecko) Chrome/46.0.2490.71 Safari/537.36'
         }
+        # print "year!"+year+"term!!"+term
+        self.score_url = self.score_url_temp + 'year=' + year + '&term=' + term + '&para=0&sortColumn=&Submit=%E6%9F%A5%E8%AF%A2'  # 分数URL
 
-    def getpage(self,state):
+    def getpage(self, state):
         # 构造request
         req = urllib2.Request(url='http://jwgl.nwsuaf.edu.cn/academic/j_acegi_security_check',
                               data=self.loging_data.encode(encoding='utf-8'),
@@ -196,7 +224,7 @@ class NWAFU:
 
         try:
             # req1 = session.post('http://jwgl.nwsuaf.edu.cn/academic/j_acegi_security_check', data=self.loging_data, headers=self.headers)
-            result = opener.open(req)  # 访问请求的链接
+            opener.open(req)  # 访问请求的链接
 
         except urllib2.HTTPError:
             print("connect failed")
@@ -204,26 +232,27 @@ class NWAFU:
         try:
             if state == 'course':
                 result = opener.open(
-                    'http://jwgl.nwsuaf.edu.cn/academic/student/currcourse/currcourse.jsdo?groupId=&moduleId=2000')  # 进入教务系统个人成绩信息界面
+                    self.course_url)  # 进入教务系统个人成绩信息界面
                 page = result.read().decode('gbk')
                 return page
             if state == 'score':
                 result = opener.open(
-                    'http://jwgl.nwsuaf.edu.cn/academic/manager/score/studentOwnScore.do?groupId=&moduleId=2021')
+                    self.score_url)
                 page = result.read()
                 return page
         except urllib2.HTTPError:
             print("error")
 
+# def get_captcha(request):
+#     CAPTCHA_URL = "http://jwgl.nwsuaf.edu.cn/academic/getCaptcha.do"
+#     session = requests.session()
+#     image = session.get(CAPTCHA_URL)
+#     request.session['JSESSIONID'] = session.cookies['JSESSIONID']
+#     print type(image.content)
+#     return image.content
 
-def get_captcha(request):
-        CAPTCHA_URL = "http://jwgl.nwsuaf.edu.cn/academic/getCaptcha.do"
-        session = requests.session()
-        image = session.get(CAPTCHA_URL)
-        request.session['JSESSIONID'] = session.cookies['JSESSIONID']
-        print type(image.content)
-        return image.content
-def register(request,self):
-        if request.method == "GET":
-            captcha =self.get_captcha(request)
-            return render(request, 'index.html', {'captcha': captcha})
+
+# def register(request, self):
+#     if request.method == "GET":
+#         captcha = self.get_captcha(request)
+#         return render(request, 'index.html', {'captcha': captcha})
